@@ -19,10 +19,11 @@
         body { 
             font-family: 'Prompt', sans-serif; background-color: var(--bg-dark);
             margin: 0; display: flex; justify-content: center; align-items: center; 
-            height: 100vh; color: var(--outline); overflow: hidden;
+            height: 100vh; height: 100dvh; /* รองรับ Safari บน iOS ได้ดีขึ้น */
+            color: var(--outline); overflow: hidden;
         }
         #app-container { 
-            width: 100vw; height: 100vh; background: linear-gradient(135deg, #1e293b, #0f172a); 
+            width: 100vw; height: 100vh; height: 100dvh; background: linear-gradient(135deg, #1e293b, #0f172a); 
             position: relative; overflow: hidden; display: flex;
         }
         .screen-layer {
@@ -57,6 +58,7 @@
             width: 320px; padding: 20px; display: flex; flex-direction: column; gap: 15px;
             background: rgba(255,255,255,0.05); border-right: 4px solid var(--outline); 
             overflow-y: auto; -webkit-overflow-scrolling: touch;
+            flex-shrink: 0; /* สำคัญมาก: ป้องกันไม่ให้แผงผู้เล่นโดนบีบจนหายไป */
         }
         
         #center-panel {
@@ -135,10 +137,16 @@
 
         /* --- Tablets & Large Phones --- */
         @media (max-width: 1024px) {
-            #game-ui { flex-direction: column; overflow-y: auto; padding-bottom: 30px; }
+            #game-ui { flex-direction: column; overflow: hidden; } /* แก้ไข: ไม่ให้ทั้งแผงใหญ่เลื่อนทะลุ */
             #players-panel { 
                 width: 100%; flex-direction: row; border-right: none; padding: 15px; 
                 border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center; gap: 15px;
+                flex-shrink: 0; /* ล็อกความสูงไว้ */
+                overflow-y: hidden;
+            }
+            #center-panel {
+                justify-content: flex-start; /* สำคัญ: ป้องกันขอบบนของกระดานโดนตัดหายไป */
+                padding-bottom: 30px;
             }
             .player-card { flex: 1 1 40%; max-width: 300px; padding: 12px; } 
             .p-name { font-size: 18px; }
@@ -162,7 +170,7 @@
             .p-ins-area { font-size: 12px; margin-top: 4px; min-height: 18px; gap: 3px;}
             .p-ins-area i { font-size: 10px; padding: 3px; border-width: 1px; }
             
-            #center-panel { padding: 10px 5px; }
+            #center-panel { padding: 10px 5px; justify-content: flex-start; }
             
             /* ปรับกระดานให้เรียง 6 ช่องเป๊ะๆ ไม่ล้นจอ */
             #board-wrapper { padding: 6px; border-width: 3px; border-radius: 10px; gap: 6px; width: 100%; max-width: 100%; box-sizing: border-box; }
@@ -233,6 +241,7 @@
         <!-- แผงผู้เล่น (รวมซ้าย-ขวามาไว้ด้วยกันเพื่อให้รองรับมือถือง่ายขึ้น) -->
         <div id="players-panel"></div>
         
+        <!-- กระดานและปุ่มกด จะเลื่อนแยกส่วนอิสระ ไม่ดันแผงข้างบนให้หายไป -->
         <div id="center-panel">
             <div id="board-wrapper"></div>
             <div id="controls">
