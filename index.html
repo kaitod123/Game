@@ -52,12 +52,12 @@
         .btn-select:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--outline); }
         .btn-select:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 4px 6px 0px var(--outline); }
         
-        #left-panel, #right-panel {
-            width: 280px; padding: 20px; display: flex; flex-direction: column; gap: 20px;
+        /* เปลี่ยนโครงสร้างหน้าจอแผงผู้เล่นให้รวมเป็นแผงเดียวเพื่อให้จัดลงมือถือง่ายขึ้น */
+        #players-panel {
+            width: 320px; padding: 20px; display: flex; flex-direction: column; gap: 15px;
             background: rgba(255,255,255,0.05); border-right: 4px solid var(--outline); 
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
-        #right-panel { border-right: none; border-left: 4px solid var(--outline); }
         
         #center-panel {
             flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -136,9 +136,10 @@
         /* --- Tablets & Large Phones --- */
         @media (max-width: 1024px) {
             #game-ui { flex-direction: column; overflow-y: auto; padding-bottom: 30px; }
-            #left-panel, #right-panel { width: 100%; flex-direction: row; border: none; padding: 15px; border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center; gap: 15px;}
-            #right-panel { border-bottom: none; border-top: 2px solid rgba(255,255,255,0.2); }
-            
+            #players-panel { 
+                width: 100%; flex-direction: row; border-right: none; padding: 15px; 
+                border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center; gap: 15px;
+            }
             .player-card { flex: 1 1 40%; max-width: 300px; padding: 12px; } 
             .p-name { font-size: 18px; }
             
@@ -153,40 +154,49 @@
             .title-logo { font-size: 35px; }
             .btn-select { width: 100%; font-size: 16px; padding: 12px; }
             
-            #left-panel, #right-panel { gap: 8px; padding: 10px; }
-            .player-card { flex: 1 1 45%; max-width: 50%; padding: 10px; }
-            .p-name { font-size: 14px; margin-bottom: 5px; }
-            .p-stat { font-size: 12px; }
-            .p-ins-area i { font-size: 12px; padding: 3px; }
+            /* ปรับกล่องผู้เล่นให้กะทัดรัดขึ้น */
+            #players-panel { gap: 8px; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.2); }
+            .player-card { flex: 1 1 calc(50% - 10px); max-width: calc(50% - 4px); padding: 10px; border-width: 2px; border-radius: 12px; }
+            .p-name { font-size: 14px; margin-bottom: 4px; padding-bottom: 2px; }
+            .p-stat { font-size: 12px; margin-bottom: 2px;}
+            .p-ins-area { font-size: 12px; margin-top: 4px; min-height: 18px; gap: 3px;}
+            .p-ins-area i { font-size: 10px; padding: 3px; border-width: 1px; }
             
             #center-panel { padding: 10px 5px; }
-            #board-wrapper { padding: 8px; border-width: 4px; border-radius: 12px; gap: 6px; width: 100%; }
             
-            /* Fluid Grid calculation for 6 items in a row */
-            .board-row { display: flex; width: 100%; justify-content: flex-start; gap: 2%; }
+            /* ปรับกระดานให้เรียง 6 ช่องเป๊ะๆ ไม่ล้นจอ */
+            #board-wrapper { padding: 6px; border-width: 3px; border-radius: 10px; gap: 6px; width: 100%; max-width: 100%; box-sizing: border-box; }
+            .board-row { display: flex; width: 100%; justify-content: space-between; gap: 4px; margin-bottom: 0; }
             .space { 
-                width: 15%; height: auto; aspect-ratio: 1/1; /* 15% * 6 = 90% + 10% gap = 100% */
-                border-width: 2px; border-radius: 6px; min-width: 0; min-height: 0; 
+                width: calc(100% / 6 - 4px); /* หาร 6 ช่อง หักลบช่องว่าง */
+                height: auto; 
+                aspect-ratio: 1/1; 
+                border-width: 2px; 
+                border-radius: 6px; 
+                min-width: 0; min-height: 0; 
             }
-            .space-icon { font-size: 5vw; }
-            .space-num { font-size: 8px; top: 1px; left: 2px; }
-            .tokens-area { gap: 1px; bottom: 2px; right: 2px; }
-            .token { width: 14px; height: 14px; font-size: 8px; border-width: 1px; }
+            .space-icon { font-size: 20px; }
+            .space-num { font-size: 9px; top: 1px; left: 3px; }
+            .tokens-area { gap: 2px; bottom: 2px; right: 2px; }
+            .token { width: 14px; height: 14px; font-size: 9px; border-width: 1px; }
             
-            #controls { padding: 15px; width: 100%; margin-top: 15px; border-radius: 12px; }
-            .turn-announcer { font-size: 18px; }
+            /* ปรับแผงควบคุมด้านล่าง */
+            #controls { padding: 15px; width: 100%; margin-top: 10px; border-radius: 12px; gap: 8px;}
+            .turn-announcer { font-size: 18px; margin-bottom: 5px;}
             #btn-roll { font-size: 18px; padding: 12px; width: 100% !important; }
             
             .ins-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .ins-card { padding: 10px 5px; }
+            .ins-card { padding: 10px 5px; border-radius: 12px;}
             .ins-card i { font-size: 24px; margin-bottom: 5px; }
             .ins-card .i-name { font-size: 13px; }
             .ins-card .i-cost { font-size: 12px; }
+            .ins-card .i-desc { font-size: 10px; }
         }
         
-        /* Very small screens correction */
+        /* สำหรับจอที่เล็กมากๆ (เช่น iPhone SE) */
         @media (max-width: 360px) {
-            .player-card { flex: 1 1 100%; max-width: 100%; }
+            .space-icon { font-size: 16px; }
+            .token { width: 12px; height: 12px; font-size: 7px;}
         }
     </style>
 </head>
@@ -220,7 +230,9 @@
     </div>
 
     <div id="game-ui">
-        <div id="left-panel"></div>
+        <!-- แผงผู้เล่น (รวมซ้าย-ขวามาไว้ด้วยกันเพื่อให้รองรับมือถือง่ายขึ้น) -->
+        <div id="players-panel"></div>
+        
         <div id="center-panel">
             <div id="board-wrapper"></div>
             <div id="controls">
@@ -229,12 +241,11 @@
                     <i class="fa-solid fa-dice dice-display" id="dice-icon"></i> <span>รอเพื่อน...</span>
                 </button>
                 <!-- ปุ่มออกจากเกมเมื่อกำลังเล่น -->
-                <button class="btn-select" style="background:var(--danger); padding: 10px 20px; font-size: 16px; width: auto; margin-top: 10px;" onclick="if(confirm('แน่ใจหรือไม่ว่าต้องการออกจากเกม? ระบบจะพากลับไปหน้าแรก')) location.reload();">
+                <button class="btn-select" style="background:var(--danger); padding: 8px 20px; font-size: 14px; width: auto; margin-top: 5px;" onclick="if(confirm('แน่ใจหรือไม่ว่าต้องการออกจากเกม? ระบบจะพากลับไปหน้าแรก')) location.reload();">
                     <i class="fa-solid fa-right-from-bracket"></i> ออกจากเกม
                 </button>
             </div>
         </div>
-        <div id="right-panel"></div>
     </div>
 </div>
 
@@ -455,7 +466,8 @@
         document.getElementById('room-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
         
-        document.getElementById('left-panel').innerHTML = ''; document.getElementById('right-panel').innerHTML = '';
+        // สร้าง Card ของผู้เล่นทุกคนไว้ในกล่องเดียว เพื่อให้จัดเรียงแบบ Responsive ได้ง่าย
+        document.getElementById('players-panel').innerHTML = '';
         for(let i=0; i<gameState.playerCount; i++) {
             let p = localPlayers[i];
             let cardHtml = `<div class="player-card" id="card-p${p.id}">
@@ -464,8 +476,7 @@
                 <div class="p-stat"><span style="color:var(--accent);"><i class="fa-solid fa-bolt"></i> พลังงาน</span> <span id="p${p.id}-energy">100%</span></div>
                 <div class="p-ins-area" id="p${p.id}-ins"></div>
             </div>`;
-            if(i % 2 === 0) document.getElementById('left-panel').innerHTML += cardHtml;
-            else document.getElementById('right-panel').innerHTML += cardHtml;
+            document.getElementById('players-panel').innerHTML += cardHtml;
         }
         
         const wrapper = document.getElementById('board-wrapper');
@@ -625,6 +636,22 @@
 
     async function handleSpaceLanded(p) {
         let type = boardLayout[p.pos].type;
+        
+        // --- ระบบจบเกมทันทีเมื่อมีคนถึงเส้นชัย ---
+        if(type === 'goal') {
+            await Swal.fire({ 
+                title: 'ถึงเส้นชัยแล้ว!', 
+                html: `<b style="color:${p.color}">${p.name}</b> เข้าเส้นชัยเป็นคนแรก!<br>เกมจบลงแล้ว!`, 
+                icon: 'success', 
+                allowOutsideClick: false, 
+                width: '90%' 
+            });
+            gameState.players[p.id] = p;
+            gameState.status = 'finished'; // เปลี่ยนสถานะเป็นจบเกม
+            syncState(); // สั่งอัปเดตไปให้ทุกคนรู้ว่าจบเกมแล้ว
+            return;
+        }
+        
         if(type === 'work') showWorkMenu(p);
         else if(type === 'food') {
             let cost = -1000; let heal = 30; if(p.money < Math.abs(cost)) cost = -p.money; 
@@ -745,7 +772,7 @@
         let html = localPlayers.filter(p => p.active).sort((a,b) => b.money - a.money).map((p, idx) => {
             return `<div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:800; font-size:18px;"><span style="color:${p.color}">${idx+1}. ${p.name}</span><span style="color:var(--money)">${p.money.toLocaleString()} ฿</span></div>`;
         }).join('');
-        Swal.fire({ title: `🏆 ผู้ชนะคือ ${winner.name}!`, html: `สรุปความมั่งคั่งตอนเกษียณ:<br><br>${html}`, icon: 'success', confirmButtonText: 'กลับหน้าแรก', allowOutsideClick: false, width: '90%' }).then(() => location.reload());
+        Swal.fire({ title: `🏆 ผู้ชนะคือ ${winner.name}!`, html: `สรุปความมั่งคั่งตอนจบเกม:<br><br>${html}`, icon: 'success', confirmButtonText: 'กลับหน้าแรก', allowOutsideClick: false, width: '90%' }).then(() => location.reload());
     }
 </script>
 
