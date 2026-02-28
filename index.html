@@ -83,11 +83,22 @@
         }
         .board-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
         .board-row:nth-child(even) { flex-direction: row-reverse; }
+        
+        /* เพิ่มอนิเมชั่นช่องกระดานเวลาถูกเดินไปเหยียบ */
+        @keyframes spacePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); border-color: var(--warning); box-shadow: 0 0 15px var(--warning); z-index: 20;}
+            100% { transform: scale(1); }
+        }
+        .space-pop {
+            animation: spacePop 0.3s ease-out;
+        }
+
         .space {
             width: 80px; height: 80px; border: 3px solid var(--outline); border-radius: 12px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             background: white; position: relative; box-shadow: 2px 4px 0px rgba(0,0,0,0.2);
-            flex-shrink: 0;
+            flex-shrink: 0; transition: transform 0.2s, box-shadow 0.2s;
         }
         .space-icon { font-size: 28px; }
         .space-num { position: absolute; top: 2px; left: 4px; font-size: 10px; font-weight: 900; opacity: 0.5;}
@@ -100,10 +111,17 @@
         .tokens-area {
             position: absolute; bottom: 5px; right: 5px; display: flex; flex-wrap: wrap-reverse; gap: 4px; width: 100%; justify-content: flex-end; padding-right: 5px;
         }
+        
+        /* อนิเมชั่นกระโดดแบบเด้งๆ ของเหรียญผู้เล่น */
+        @keyframes tokenHop {
+            0% { transform: translateY(-20px) scale(1.2); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
         .token {
             width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;
             box-shadow: 1px 2px 0px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-            font-size: 10px; font-weight: 900; color: white; z-index: 50; transition: all 0.3s;
+            font-size: 10px; font-weight: 900; color: white; z-index: 50; 
+            animation: tokenHop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* ทำให้มีแรงเด้งดึ๋ง */
         }
         
         #controls {
@@ -112,8 +130,11 @@
         }
         .turn-announcer { font-size: 24px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000; }
         .dice-display { font-size: 35px; width: 40px; text-align: center; }
-        .dice-shake { animation: shake 0.5s infinite; }
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); } }
+        
+        /* ปรับสปีดลูกเต๋าตอนเขย่าให้เร็วขึ้น */
+        .dice-shake { animation: shake 0.2s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-20deg); } 100% { transform: rotate(0deg); } }
+        
         .floating-text {
             position: absolute; font-weight: 900; font-size: 22px; z-index: 2000; white-space: nowrap;
             text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 3px 4px 0 var(--outline);
@@ -137,20 +158,15 @@
 
         /* --- Tablets & Large Phones --- */
         @media (max-width: 1024px) {
-            #game-ui { flex-direction: column; overflow: hidden; } /* แก้ไข: ไม่ให้ทั้งแผงใหญ่เลื่อนทะลุ */
+            #game-ui { flex-direction: column; overflow: hidden; }
             #players-panel { 
                 width: 100%; flex-direction: row; border-right: none; padding: 15px; 
                 border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center; gap: 15px;
-                flex-shrink: 0; /* ล็อกความสูงไว้ */
-                overflow-y: hidden;
+                flex-shrink: 0; overflow-y: hidden;
             }
-            #center-panel {
-                justify-content: flex-start; /* สำคัญ: ป้องกันขอบบนของกระดานโดนตัดหายไป */
-                padding-bottom: 30px;
-            }
+            #center-panel { justify-content: flex-start; padding-bottom: 30px; }
             .player-card { flex: 1 1 40%; max-width: 300px; padding: 12px; } 
             .p-name { font-size: 18px; }
-            
             #board-wrapper { padding: 15px; width: 95%; max-width: 800px; margin: 0 auto; } 
             .space { width: 65px; height: 65px; } 
             .space-icon { font-size: 24px; }
@@ -162,7 +178,6 @@
             .title-logo { font-size: 35px; }
             .btn-select { width: 100%; font-size: 16px; padding: 12px; }
             
-            /* ปรับกล่องผู้เล่นให้กะทัดรัดขึ้น */
             #players-panel { gap: 8px; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.2); }
             .player-card { flex: 1 1 calc(50% - 10px); max-width: calc(50% - 4px); padding: 10px; border-width: 2px; border-radius: 12px; }
             .p-name { font-size: 14px; margin-bottom: 4px; padding-bottom: 2px; }
@@ -171,23 +186,17 @@
             
             #center-panel { padding: 10px 5px; justify-content: flex-start; }
             
-            /* ปรับกระดานให้เรียง 6 ช่องเป๊ะๆ ไม่ล้นจอ */
             #board-wrapper { padding: 6px; border-width: 3px; border-radius: 10px; gap: 6px; width: 100%; max-width: 100%; box-sizing: border-box; }
             .board-row { display: flex; width: 100%; justify-content: space-between; gap: 4px; margin-bottom: 0; }
             .space { 
-                width: calc(100% / 6 - 4px); /* หาร 6 ช่อง หักลบช่องว่าง */
-                height: auto; 
-                aspect-ratio: 1/1; 
-                border-width: 2px; 
-                border-radius: 6px; 
-                min-width: 0; min-height: 0; 
+                width: calc(100% / 6 - 4px); height: auto; aspect-ratio: 1/1; 
+                border-width: 2px; border-radius: 6px; min-width: 0; min-height: 0; 
             }
             .space-icon { font-size: 20px; }
             .space-num { font-size: 9px; top: 1px; left: 3px; }
             .tokens-area { gap: 2px; bottom: 2px; right: 2px; }
             .token { width: 14px; height: 14px; font-size: 9px; border-width: 1px; }
             
-            /* ปรับแผงควบคุมด้านล่าง */
             #controls { padding: 15px; width: 100%; margin-top: 10px; border-radius: 12px; gap: 8px;}
             .turn-announcer { font-size: 18px; margin-bottom: 5px;}
             #btn-roll { font-size: 18px; padding: 12px; width: 100% !important; }
@@ -200,7 +209,6 @@
             .ins-card .i-desc { font-size: 10px; }
         }
         
-        /* สำหรับจอที่เล็กมากๆ (เช่น iPhone SE) */
         @media (max-width: 360px) {
             .space-icon { font-size: 16px; }
             .token { width: 12px; height: 12px; font-size: 7px;}
@@ -237,10 +245,10 @@
     </div>
 
     <div id="game-ui">
-        <!-- แผงผู้เล่น (รวมซ้าย-ขวามาไว้ด้วยกันเพื่อให้รองรับมือถือง่ายขึ้น) -->
+        <!-- แผงผู้เล่น -->
         <div id="players-panel"></div>
         
-        <!-- กระดานและปุ่มกด จะเลื่อนแยกส่วนอิสระ ไม่ดันแผงข้างบนให้หายไป -->
+        <!-- กระดานและปุ่มกด -->
         <div id="center-panel">
             <div id="board-wrapper"></div>
             <div id="controls">
@@ -248,7 +256,6 @@
                 <button class="btn-select" id="btn-roll" style="width: auto; padding: 15px 40px; font-size: 24px;" onclick="window.rollDice()" disabled>
                     <i class="fa-solid fa-dice dice-display" id="dice-icon"></i> <span>รอเพื่อน...</span>
                 </button>
-                <!-- ปุ่มออกจากเกมเมื่อกำลังเล่น -->
                 <button class="btn-select" style="background:var(--danger); padding: 8px 20px; font-size: 14px; width: auto; margin-top: 5px;" onclick="if(confirm('แน่ใจหรือไม่ว่าต้องการออกจากเกม? ระบบจะพากลับไปหน้าแรก')) location.reload();">
                     <i class="fa-solid fa-right-from-bracket"></i> ออกจากเกม
                 </button>
@@ -259,7 +266,6 @@
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-    // --- ตั้งค่าให้เชื่อมต่อไปยัง Render ของคุณ ---
     const SERVER_URL = "https://corporate-game-server.onrender.com";
     const socket = io(SERVER_URL);
 
@@ -292,7 +298,6 @@
     let gameState = null;
     let localPlayers = [];
 
-    // เมื่อต่อเซิร์ฟเวอร์ติด ให้ซ่อนหน้า Loading
     socket.on('connect', () => {
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('lobby-screen').style.display = 'flex';
@@ -301,8 +306,6 @@
     function syncState() {
         if(roomCode) {
             socket.emit('update_state', { roomCode: roomCode, newState: gameState });
-            
-            // --- อัปเดตหน้าจอของคนส่งข้อมูลทันที ---
             if (gameState.status === 'playing') {
                 updateAllUI();
                 updateTurnDisplay();
@@ -342,16 +345,12 @@
         }
     });
 
-    // --- ระบบสร้างห้อง (ตั้งชื่อและเลือกจำนวนคน) ---
     window.createRoom = async function() {
         const { value: playerName } = await Swal.fire({
             title: 'ตั้งชื่อผู้เล่นของคุณ',
             input: 'text',
             inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
-            showCancelButton: true,
-            confirmButtonText: 'ถัดไป',
-            customClass: { popup: 'hud-panel' },
-            width: '90%'
+            showCancelButton: true, confirmButtonText: 'ถัดไป', customClass: { popup: 'hud-panel' }, width: '90%'
         });
 
         if (!playerName) return;
@@ -359,27 +358,15 @@
         const { value: maxPlayers } = await Swal.fire({
             title: 'เลือกจำนวนผู้เล่นสูงสุด',
             input: 'select',
-            inputOptions: {
-                '2': '2 คน',
-                '3': '3 คน',
-                '4': '4 คน'
-            },
-            inputValue: '4',
-            showCancelButton: true,
-            confirmButtonText: 'สร้างห้อง',
-            customClass: { popup: 'hud-panel' },
-            width: '90%'
+            inputOptions: { '2': '2 คน', '3': '3 คน', '4': '4 คน' },
+            inputValue: '4', showCancelButton: true, confirmButtonText: 'สร้างห้อง', customClass: { popup: 'hud-panel' }, width: '90%'
         });
 
         if (!maxPlayers) return;
 
         let p = { uid: currentUserId, id: 0, name: playerName, color: colors[0], money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
         let initialState = { 
-            status: 'lobby', 
-            players: { "0": p }, 
-            playerCount: 1, 
-            currentPlayerIndex: 0,
-            maxPlayers: parseInt(maxPlayers) // เก็บจำนวนคนสูงสุดไว้ใน State
+            status: 'lobby', players: { "0": p }, playerCount: 1, currentPlayerIndex: 0, maxPlayers: parseInt(maxPlayers)
         };
 
         socket.emit('create_room', { initialState }, (res) => {
@@ -391,24 +378,16 @@
         });
     }
 
-    // --- ระบบเข้าร่วมห้อง ---
     window.joinRoom = async function() {
         const { value: code } = await Swal.fire({ 
             title: 'ใส่รหัสห้อง 4 หลัก', input: 'text', inputAttributes: { maxlength: 4 }, 
-            showCancelButton: true, confirmButtonText: 'ถัดไป', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' },
-            width: '90%'
+            showCancelButton: true, confirmButtonText: 'ถัดไป', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' }, width: '90%'
         });
         if(!code) return;
 
         const { value: playerName } = await Swal.fire({
-            title: 'ตั้งชื่อผู้เล่นของคุณ',
-            input: 'text',
-            inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
-            showCancelButton: true,
-            confirmButtonText: 'เข้าร่วมห้อง',
-            confirmButtonColor: 'var(--warning)',
-            customClass: { popup: 'hud-panel' },
-            width: '90%'
+            title: 'ตั้งชื่อผู้เล่นของคุณ', input: 'text', inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
+            showCancelButton: true, confirmButtonText: 'เข้าร่วมห้อง', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' }, width: '90%'
         });
 
         if (!playerName) return;
@@ -419,12 +398,10 @@
         socket.emit('join_room', { roomCode: code.toUpperCase(), playerState: newP }, (res) => {
             Swal.close();
             if(res.success) {
-                // เช็กว่าผู้เล่นเกินจำนวนที่หัวหน้าห้องตั้งไว้หรือไม่
                 if(res.state.maxPlayers && res.myPlayerId >= res.state.maxPlayers) {
                     Swal.fire({title: 'เข้าไม่ได้', text: 'ห้องนี้มีผู้เล่นเต็มแล้ว!', icon: 'error', width: '90%'});
-                    return; // ยกเลิกการเข้าร่วม
+                    return;
                 }
-
                 roomCode = code.toUpperCase(); gameState = res.state; myPlayerId = res.myPlayerId;
                 gameState.players[myPlayerId].color = colors[myPlayerId];
                 document.getElementById('display-room-code').innerText = roomCode;
@@ -439,7 +416,7 @@
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('room-screen').style.display = 'flex';
         document.getElementById('player-count').innerText = gameState.playerCount;
-        document.getElementById('max-players').innerText = gameState.maxPlayers || 4; // อัปเดตตัวเลขจำนวนคนสูงสุด
+        document.getElementById('max-players').innerText = gameState.maxPlayers || 4; 
         
         let listHtml = '';
         for(let i=0; i<gameState.playerCount; i++) {
@@ -464,8 +441,6 @@
         if(gameState.playerCount < 1) return;
         gameState.status = 'choosing_insurance';
         syncState();
-        
-        // --- ให้หัวหน้าห้องเปลี่ยนหน้าจอไปเลือกประกันด้วยตัวเอง ---
         transitionToGame();
         promptStartingInsurance();
     }
@@ -474,7 +449,6 @@
         document.getElementById('room-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
         
-        // สร้าง Card ของผู้เล่นทุกคนไว้ในกล่องเดียว เพื่อให้จัดเรียงแบบ Responsive ได้ง่าย
         document.getElementById('players-panel').innerHTML = '';
         for(let i=0; i<gameState.playerCount; i++) {
             let p = localPlayers[i];
@@ -532,7 +506,7 @@
         document.getElementById(`card-p${p.id}`).classList.remove('active');
         gameState.players[myPlayerId] = p;
         syncState();
-        checkAllReady(); // ให้หัวหน้าห้องเช็กสถานะการเริ่มเกมหลังจากตัวเองกดพร้อม
+        checkAllReady();
     }
 
     function checkAllReady() {
@@ -545,12 +519,14 @@
     }
 
     function handleLiveSync(oldState) {
-        drawTokens();
+        drawTokens(); // วาดเหรียญในตำแหน่งใหม่
+        
         if(oldState) {
             for(let i=0; i<gameState.playerCount; i++) {
                 let op = oldState.players[i]; let np = gameState.players[i];
                 if(op && np) {
                     let diffM = np.money - op.money;
+                    // โชว์ข้อความเงินลอยขึ้นเมื่อเงินมีการเปลี่ยนแปลงจริงๆ
                     if(diffM > 0) spawnFloatingText(`+${diffM.toLocaleString()}฿`, 'var(--money)', i);
                     else if(diffM < 0) spawnFloatingText(`${diffM.toLocaleString()}฿`, 'var(--danger)', i);
                     
@@ -579,7 +555,6 @@
             document.getElementById(`p${p.id}-money`).innerText = p.money.toLocaleString();
             document.getElementById(`p${p.id}-energy`).innerText = p.energy + '%';
             
-            // --- เพิ่มการแสดงผลป้ายกำกับชื่อประกัน ---
             if (p.insurances && p.insurances.length > 0) {
                 document.getElementById(`p${p.id}-ins`).innerHTML = p.insurances.map(ins => 
                     `<div style="background:#e0f2fe; color:#0369a1; padding:3px 6px; border-radius:6px; border:1px solid #bae6fd; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; box-shadow: 1px 1px 0px rgba(0,0,0,0.1);">
@@ -613,7 +588,11 @@
             if(!p.active) return;
             let area = document.getElementById(`tokens-${p.pos}`);
             if(area) {
-                let tk = document.createElement('div'); tk.className = `token`; tk.style.background = p.color; tk.innerText = p.id + 1; area.appendChild(tk);
+                let tk = document.createElement('div'); 
+                tk.className = `token`; 
+                tk.style.background = p.color; 
+                tk.innerText = p.id + 1; 
+                area.appendChild(tk);
             }
         });
     }
@@ -625,49 +604,65 @@
         document.body.appendChild(fText); setTimeout(() => fText.remove(), 1500);
     }
 
+    // --- ระบบทอยลูกเต๋าแบบมีอนิเมชั่น ---
     window.rollDice = function() {
         if(gameState.currentPlayerIndex !== myPlayerId) return;
         let p = localPlayers[myPlayerId];
         let btn = document.getElementById('btn-roll'); let icon = document.getElementById('dice-icon');
-        btn.disabled = true; icon.className = `fa-solid fa-dice dice-display dice-shake`;
+        btn.disabled = true; 
+        
+        // เล่นอนิเมชั่นสุ่มลูกเต๋าก่อน
+        let rollInterval = setInterval(() => {
+            let tempRoll = Math.floor(Math.random() * 6);
+            icon.className = `fa-solid ${diceIcons[tempRoll]} dice-display dice-shake`;
+        }, 100);
 
         setTimeout(() => {
+            clearInterval(rollInterval); // หยุดสุ่ม
             let roll = Math.floor(Math.random() * 6) + 1;
-            icon.className = `fa-solid ${diceIcons[roll-1]} dice-display`;
+            icon.className = `fa-solid ${diceIcons[roll-1]} dice-display`; // โชว์ผลลัพธ์จริง
             Swal.fire({ title: `ทอยได้ ${roll}!`, timer: 1000, showConfirmButton: false, position: 'top', customClass: {popup: 'hud-panel'}, width: '90%' }).then(() => movePlayerLocally(p, roll));
-        }, 600);
+        }, 800); // ระยะเวลาที่สุ่มลูกเต๋า (0.8 วิ)
     }
 
+    // --- ระบบเดินทีละก้าวแบบ Real-time ---
     function movePlayerLocally(p, steps) {
         let currentStep = 0;
+        
         let moveInterval = setInterval(() => {
-            currentStep++; p.pos++;
-            if(p.pos >= 29) { p.pos = 29; currentStep = steps; }
+            currentStep++; 
+            if(p.pos < 29) { p.pos++; }
+            
+            // ส่งข้อมูลการขยับไปให้เพื่อนๆ เห็นพร้อมกันทันที
+            gameState.players[myPlayerId].pos = p.pos; 
+            syncState(); 
+            
+            // อัปเดตฝั่งเราเองด้วย
             drawTokens();
-            if(currentStep >= steps) {
-                clearInterval(moveInterval);
-                gameState.players[myPlayerId].pos = p.pos; syncState();
-                setTimeout(() => handleSpaceLanded(p), 300);
+            
+            // ทำให้ช่องกระดานกระพริบเวลามีคนเหยียบ
+            let spaces = document.querySelectorAll('.space');
+            if(spaces[p.pos]) {
+                spaces[p.pos].classList.add('space-pop');
+                setTimeout(() => spaces[p.pos].classList.remove('space-pop'), 300);
             }
-        }, 300); 
+
+            if(currentStep >= steps || p.pos >= 29) {
+                clearInterval(moveInterval);
+                setTimeout(() => handleSpaceLanded(p), 400); // รอจังหวะนิดนึงแล้วแสดงอีเวนต์
+            }
+        }, 400); // ความเร็วในการเดิน (0.4 วิ ต่อก้าว)
     }
 
     async function handleSpaceLanded(p) {
         let type = boardLayout[p.pos].type;
         
-        // --- ระบบจบเกมทันทีเมื่อมีคนถึงเส้นชัย ---
         if(type === 'goal') {
             await Swal.fire({ 
-                title: 'ถึงเส้นชัยแล้ว!', 
-                html: `<b style="color:${p.color}">${p.name}</b> เข้าเส้นชัยเป็นคนแรก!<br>เกมจบลงแล้ว!`, 
-                icon: 'success', 
-                allowOutsideClick: false, 
-                width: '90%' 
+                title: 'ถึงเส้นชัยแล้ว!', html: `<b style="color:${p.color}">${p.name}</b> เข้าเส้นชัยเป็นคนแรก!<br>เกมจบลงแล้ว!`, 
+                icon: 'success', allowOutsideClick: false, width: '90%' 
             });
-            gameState.players[p.id] = p;
-            gameState.status = 'finished'; // เปลี่ยนสถานะเป็นจบเกม
-            syncState(); // สั่งอัปเดตไปให้ทุกคนรู้ว่าจบเกมแล้ว
-            return;
+            gameState.players[p.id] = p; gameState.status = 'finished'; syncState(); return;
         }
         
         if(type === 'work') showWorkMenu(p);
