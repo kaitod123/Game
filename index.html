@@ -216,7 +216,17 @@
     });
 
     function syncState() {
-        if(roomCode) socket.emit('update_state', { roomCode: roomCode, newState: gameState });
+        if(roomCode) {
+            socket.emit('update_state', { roomCode: roomCode, newState: gameState });
+            
+            // --- เพิ่มส่วนนี้: ให้เกมอัปเดตหน้าจอของคนส่งข้อมูลทันที ---
+            if (gameState.status === 'playing') {
+                updateAllUI();
+                updateTurnDisplay();
+            } else if (gameState.status === 'finished') {
+                showWinnerScreen();
+            }
+        }
     }
 
     socket.on('state_updated', (newState) => {
@@ -367,6 +377,10 @@
         if(gameState.playerCount < 1) return;
         gameState.status = 'choosing_insurance';
         syncState();
+        
+        // --- เพิ่มส่วนนี้: ให้หัวหน้าห้องเปลี่ยนหน้าจอไปเลือกประกันด้วยตัวเอง ---
+        transitionToGame();
+        promptStartingInsurance();
     }
 
     function transitionToGame() {
@@ -427,6 +441,7 @@
         document.getElementById(`card-p${p.id}`).classList.remove('active');
         gameState.players[myPlayerId] = p;
         syncState();
+        checkAllReady(); // --- เพิ่มบรรทัดนี้: ให้หัวหน้าห้องเช็กสถานะการเริ่มเกมหลังจากตัวเองกดพร้อม
     }
 
     function checkAllReady() {
