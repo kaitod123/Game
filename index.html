@@ -75,7 +75,7 @@
         .p-name { font-size: 20px; font-weight: 900; margin: 0 0 10px 0; border-bottom: 2px dashed #cbd5e1; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
         .p-stat { font-size: 14px; font-weight: 800; margin-bottom: 5px; display: flex; justify-content: space-between;}
         .p-stat i { width: 20px; text-align: center; }
-        .p-ins-area { font-size: 14px; color: #64748b; margin-top: 8px; min-height: 20px; display: flex; flex-wrap: wrap; gap: 5px;}
+        .p-ins-area { margin-top: 8px; min-height: 24px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;}
         
         #board-wrapper {
             background: #f8fafc; border: 6px solid var(--outline); border-radius: 20px;
@@ -167,8 +167,7 @@
             .player-card { flex: 1 1 calc(50% - 10px); max-width: calc(50% - 4px); padding: 10px; border-width: 2px; border-radius: 12px; }
             .p-name { font-size: 14px; margin-bottom: 4px; padding-bottom: 2px; }
             .p-stat { font-size: 12px; margin-bottom: 2px;}
-            .p-ins-area { font-size: 12px; margin-top: 4px; min-height: 18px; gap: 3px;}
-            .p-ins-area i { font-size: 10px; padding: 3px; border-width: 1px; }
+            .p-ins-area { margin-top: 4px; min-height: 20px; gap: 4px;}
             
             #center-panel { padding: 10px 5px; justify-content: flex-start; }
             
@@ -483,7 +482,7 @@
                 <h3 class="p-name" style="color:${p.color}">${p.name} ${p.id === myPlayerId ? '<i class="fa-solid fa-star" style="color:var(--warning)"></i>' : ''}</h3>
                 <div class="p-stat"><span style="color:var(--money);"><i class="fa-solid fa-coins"></i> เงิน</span> <span id="p${p.id}-money">10,000</span></div>
                 <div class="p-stat"><span style="color:var(--accent);"><i class="fa-solid fa-bolt"></i> พลังงาน</span> <span id="p${p.id}-energy">100%</span></div>
-                <div class="p-ins-area" id="p${p.id}-ins"></div>
+                <div class="p-ins-area" id="p${p.id}-ins"><div style="font-size: 11px; color: #94a3b8; font-weight: 600;">ไม่มีประกัน</div></div>
             </div>`;
             document.getElementById('players-panel').innerHTML += cardHtml;
         }
@@ -579,7 +578,17 @@
             if(!p.active) { card.style.opacity = '0.2'; continue; }
             document.getElementById(`p${p.id}-money`).innerText = p.money.toLocaleString();
             document.getElementById(`p${p.id}-energy`).innerText = p.energy + '%';
-            document.getElementById(`p${p.id}-ins`).innerHTML = p.insurances.map(ins => `<i class="fa-solid ${insuranceTypes[ins].icon}" title="${insuranceTypes[ins].name}" style="background:white; color:var(--primary); padding:4px; border-radius:6px; border:2px solid var(--outline);"></i>`).join(' ');
+            
+            // --- เพิ่มการแสดงผลป้ายกำกับชื่อประกัน ---
+            if (p.insurances && p.insurances.length > 0) {
+                document.getElementById(`p${p.id}-ins`).innerHTML = p.insurances.map(ins => 
+                    `<div style="background:#e0f2fe; color:#0369a1; padding:3px 6px; border-radius:6px; border:1px solid #bae6fd; font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px; box-shadow: 1px 1px 0px rgba(0,0,0,0.1);">
+                        <i class="fa-solid ${insuranceTypes[ins].icon}"></i> ${insuranceTypes[ins].name}
+                    </div>`
+                ).join('');
+            } else {
+                document.getElementById(`p${p.id}-ins`).innerHTML = `<div style="font-size: 11px; color: #94a3b8; font-weight: 600;">ไม่มีประกัน</div>`;
+            }
         }
     }
 
