@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ป้องกันการซูมหน้าจอเมื่อผู้เล่นแตะรัวๆ บนมือถือ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Corporate Climber: Online Board Game</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700;800;900&display=swap" rel="stylesheet">
@@ -31,7 +32,12 @@
         #loading-screen { background: var(--bg-dark); color: white; z-index: 2000; }
         #lobby-screen { background: rgba(248, 250, 252, 0.95); z-index: 1000; display: none; }
         #room-screen { background: rgba(248, 250, 252, 0.95); z-index: 900; display: none; }
-        #game-ui { display: none; width: 100%; height: 100%; flex-direction: row; z-index: 100; overflow: hidden;}
+        
+        #game-ui { 
+            display: none; width: 100%; height: 100%; flex-direction: row; 
+            z-index: 100; overflow: hidden; -webkit-overflow-scrolling: touch;
+        }
+        
         .title-logo {
             font-size: 50px; font-weight: 900; color: white;
             text-shadow: -3px -3px 0 var(--outline), 3px -3px 0 var(--outline), -3px 3px 0 var(--outline), 3px 3px 0 var(--outline), 6px 6px 0px var(--outline);
@@ -45,42 +51,50 @@
         }
         .btn-select:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--outline); }
         .btn-select:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 4px 6px 0px var(--outline); }
+        
         #left-panel, #right-panel {
             width: 280px; padding: 20px; display: flex; flex-direction: column; gap: 20px;
-            background: rgba(255,255,255,0.05); border-right: 4px solid var(--outline); overflow-y: auto;
+            background: rgba(255,255,255,0.05); border-right: 4px solid var(--outline); 
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
         #right-panel { border-right: none; border-left: 4px solid var(--outline); }
+        
         #center-panel {
             flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; position: relative; overflow-y: auto;
+            padding: 20px; position: relative; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
+        
         .player-card {
             background: white; border: 4px solid var(--outline); border-radius: 16px;
             padding: 15px; box-shadow: 4px 6px 0px rgba(0,0,0,0.5); opacity: 0.5;
             transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s; position: relative;
         }
-        .player-card.active { opacity: 1; transform: scale(1.05); box-shadow: 6px 8px 0px var(--warning); border-color: var(--warning); }
+        .player-card.active { opacity: 1; transform: scale(1.05); box-shadow: 6px 8px 0px var(--warning); border-color: var(--warning); z-index: 10;}
         .p-name { font-size: 20px; font-weight: 900; margin: 0 0 10px 0; border-bottom: 2px dashed #cbd5e1; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
         .p-stat { font-size: 14px; font-weight: 800; margin-bottom: 5px; display: flex; justify-content: space-between;}
         .p-stat i { width: 20px; text-align: center; }
         .p-ins-area { font-size: 14px; color: #64748b; margin-top: 8px; min-height: 20px; display: flex; flex-wrap: wrap; gap: 5px;}
+        
         #board-wrapper {
             background: #f8fafc; border: 6px solid var(--outline); border-radius: 20px;
             padding: 20px; box-shadow: 10px 15px 0px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 10px; max-width: 900px;
         }
-        .board-row { display: flex; gap: 10px; }
+        .board-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
         .board-row:nth-child(even) { flex-direction: row-reverse; }
         .space {
             width: 80px; height: 80px; border: 3px solid var(--outline); border-radius: 12px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             background: white; position: relative; box-shadow: 2px 4px 0px rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
         .space-icon { font-size: 28px; }
         .space-num { position: absolute; top: 2px; left: 4px; font-size: 10px; font-weight: 900; opacity: 0.5;}
+        
         .type-start { background: #cbd5e1; } .type-work { background: #bfdbfe; color: #1e3a8a; }
         .type-food { background: #fde68a; color: #b45309; } .type-event { background: #e9d5ff; color: #7e22ce; }
         .type-hospital { background: #fecaca; color: #991b1b; } .type-invest { background: #a7f3d0; color: #047857; }
         .type-insurance { background: #c7d2fe; color: #4338ca; } .type-goal { background: var(--warning); color: white; border-color: white;}
+        
         .tokens-area {
             position: absolute; bottom: 5px; right: 5px; display: flex; flex-wrap: wrap-reverse; gap: 4px; width: 100%; justify-content: flex-end; padding-right: 5px;
         }
@@ -89,6 +103,7 @@
             box-shadow: 1px 2px 0px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
             font-size: 10px; font-weight: 900; color: white; z-index: 50; transition: all 0.3s;
         }
+        
         #controls {
             margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px;
             background: rgba(255,255,255,0.1); padding: 20px 40px; border-radius: 20px; border: 3px dashed rgba(255,255,255,0.3);
@@ -103,6 +118,7 @@
             pointer-events: none; animation: floatUpText 1.5s ease-out forwards;
         }
         @keyframes floatUpText { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-70px) scale(1.2); } }
+        
         .ins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 20px; margin-bottom: 10px; }
         .ins-radio { display: none; }
         .ins-card {
@@ -116,13 +132,61 @@
         .ins-card .i-name { font-size: 15px; font-weight: 800; color: var(--outline); line-height: 1.2; margin-bottom: 5px;}
         .ins-card .i-cost { font-size: 14px; font-weight: 700; color: var(--danger); margin-bottom: 5px; background: #fee2e2; padding: 2px 8px; border-radius: 10px;}
         .ins-card .i-desc { font-size: 12px; font-weight: 600; color: #64748b; line-height: 1.3;}
+
+        /* --- Tablets & Large Phones --- */
         @media (max-width: 1024px) {
-            #game-ui { flex-direction: column; overflow-y: auto;}
-            #left-panel, #right-panel { width: 100%; flex-direction: row; border: none; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center;}
-            .player-card { width: 160px; padding: 10px; } .p-name { font-size: 16px; }
-            .space { width: 55px; height: 55px; } .space-icon { font-size: 20px; }
-            #board-wrapper { padding: 10px; } .btn-roll { padding: 10px 20px; font-size: 18px; }
-            .ins-grid { grid-template-columns: repeat(2, 1fr); }
+            #game-ui { flex-direction: column; overflow-y: auto; padding-bottom: 30px; }
+            #left-panel, #right-panel { width: 100%; flex-direction: row; border: none; padding: 15px; border-bottom: 2px solid rgba(255,255,255,0.2); flex-wrap: wrap; justify-content: center; gap: 15px;}
+            #right-panel { border-bottom: none; border-top: 2px solid rgba(255,255,255,0.2); }
+            
+            .player-card { flex: 1 1 40%; max-width: 300px; padding: 12px; } 
+            .p-name { font-size: 18px; }
+            
+            #board-wrapper { padding: 15px; width: 95%; max-width: 800px; margin: 0 auto; } 
+            .space { width: 65px; height: 65px; } 
+            .space-icon { font-size: 24px; }
+            .btn-roll { padding: 12px 25px; font-size: 20px; }
+        }
+
+        /* --- Mobile Phones (Fluid Board Design) --- */
+        @media (max-width: 600px) {
+            .title-logo { font-size: 35px; }
+            .btn-select { width: 100%; font-size: 16px; padding: 12px; }
+            
+            #left-panel, #right-panel { gap: 8px; padding: 10px; }
+            .player-card { flex: 1 1 45%; max-width: 50%; padding: 10px; }
+            .p-name { font-size: 14px; margin-bottom: 5px; }
+            .p-stat { font-size: 12px; }
+            .p-ins-area i { font-size: 12px; padding: 3px; }
+            
+            #center-panel { padding: 10px 5px; }
+            #board-wrapper { padding: 8px; border-width: 4px; border-radius: 12px; gap: 6px; width: 100%; }
+            
+            /* Fluid Grid calculation for 6 items in a row */
+            .board-row { display: flex; width: 100%; justify-content: flex-start; gap: 2%; }
+            .space { 
+                width: 15%; height: auto; aspect-ratio: 1/1; /* 15% * 6 = 90% + 10% gap = 100% */
+                border-width: 2px; border-radius: 6px; min-width: 0; min-height: 0; 
+            }
+            .space-icon { font-size: 5vw; }
+            .space-num { font-size: 8px; top: 1px; left: 2px; }
+            .tokens-area { gap: 1px; bottom: 2px; right: 2px; }
+            .token { width: 14px; height: 14px; font-size: 8px; border-width: 1px; }
+            
+            #controls { padding: 15px; width: 100%; margin-top: 15px; border-radius: 12px; }
+            .turn-announcer { font-size: 18px; }
+            #btn-roll { font-size: 18px; padding: 12px; width: 100% !important; }
+            
+            .ins-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .ins-card { padding: 10px 5px; }
+            .ins-card i { font-size: 24px; margin-bottom: 5px; }
+            .ins-card .i-name { font-size: 13px; }
+            .ins-card .i-cost { font-size: 12px; }
+        }
+        
+        /* Very small screens correction */
+        @media (max-width: 360px) {
+            .player-card { flex: 1 1 100%; max-width: 100%; }
         }
     </style>
 </head>
@@ -146,13 +210,13 @@
         <div style="font-size: 60px; font-weight: 900; color: var(--primary); letter-spacing: 5px; text-shadow: 3px 3px 0 var(--outline); margin-bottom: 20px;" id="display-room-code">----</div>
         <p style="color: var(--outline); font-weight:800; margin-bottom: 10px;"><i class="fa-solid fa-users"></i> ผู้เล่นที่เข้าร่วมแล้ว (<span id="player-count">0</span>/<span id="max-players">4</span>)</p>
         
-        <div id="player-list" style="display:flex; flex-direction:column; gap:10px; margin-bottom: 30px; width: 100%; max-width: 300px;"></div>
+        <div id="player-list" style="display:flex; flex-direction:column; gap:10px; margin-bottom: 30px; width: 100%; max-width: 300px; padding: 0 20px;"></div>
         
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-            <button id="btn-start-game" class="btn-select" style="display:none; background:var(--accent); width: auto;" onclick="window.startGameHost()"><i class="fa-solid fa-play"></i> เริ่มเกม!</button>
-            <button class="btn-select" style="background:#64748b; width: auto;" onclick="location.reload()"><i class="fa-solid fa-arrow-left"></i> กลับหน้าแรก</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; padding: 0 20px;">
+            <button id="btn-start-game" class="btn-select" style="display:none; background:var(--accent); width: auto; flex: 1; min-width: 150px;" onclick="window.startGameHost()"><i class="fa-solid fa-play"></i> เริ่มเกม!</button>
+            <button class="btn-select" style="background:#64748b; width: auto; flex: 1; min-width: 150px;" onclick="location.reload()"><i class="fa-solid fa-arrow-left"></i> กลับหน้าแรก</button>
         </div>
-        <div id="wait-host-text" style="display:none; font-weight:900; color:var(--warning); font-size: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> รอหัวหน้าห้องกดเริ่มเกม...</div>
+        <div id="wait-host-text" style="display:none; font-weight:900; color:var(--warning); font-size: 20px; padding: 0 20px;"><i class="fa-solid fa-spinner fa-spin"></i> รอหัวหน้าห้องกดเริ่มเกม...</div>
     </div>
 
     <div id="game-ui">
@@ -219,7 +283,7 @@
         if(roomCode) {
             socket.emit('update_state', { roomCode: roomCode, newState: gameState });
             
-            // --- เพิ่มส่วนนี้: ให้เกมอัปเดตหน้าจอของคนส่งข้อมูลทันที ---
+            // --- อัปเดตหน้าจอของคนส่งข้อมูลทันที ---
             if (gameState.status === 'playing') {
                 updateAllUI();
                 updateTurnDisplay();
@@ -267,7 +331,8 @@
             inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
             showCancelButton: true,
             confirmButtonText: 'ถัดไป',
-            customClass: { popup: 'hud-panel' }
+            customClass: { popup: 'hud-panel' },
+            width: '90%'
         });
 
         if (!playerName) return;
@@ -283,7 +348,8 @@
             inputValue: '4',
             showCancelButton: true,
             confirmButtonText: 'สร้างห้อง',
-            customClass: { popup: 'hud-panel' }
+            customClass: { popup: 'hud-panel' },
+            width: '90%'
         });
 
         if (!maxPlayers) return;
@@ -310,7 +376,8 @@
     window.joinRoom = async function() {
         const { value: code } = await Swal.fire({ 
             title: 'ใส่รหัสห้อง 4 หลัก', input: 'text', inputAttributes: { maxlength: 4 }, 
-            showCancelButton: true, confirmButtonText: 'ถัดไป', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' } 
+            showCancelButton: true, confirmButtonText: 'ถัดไป', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' },
+            width: '90%'
         });
         if(!code) return;
 
@@ -321,7 +388,8 @@
             showCancelButton: true,
             confirmButtonText: 'เข้าร่วมห้อง',
             confirmButtonColor: 'var(--warning)',
-            customClass: { popup: 'hud-panel' }
+            customClass: { popup: 'hud-panel' },
+            width: '90%'
         });
 
         if (!playerName) return;
@@ -334,7 +402,7 @@
             if(res.success) {
                 // เช็กว่าผู้เล่นเกินจำนวนที่หัวหน้าห้องตั้งไว้หรือไม่
                 if(res.state.maxPlayers && res.myPlayerId >= res.state.maxPlayers) {
-                    Swal.fire('เข้าไม่ได้', 'ห้องนี้มีผู้เล่นเต็มแล้ว!', 'error');
+                    Swal.fire({title: 'เข้าไม่ได้', text: 'ห้องนี้มีผู้เล่นเต็มแล้ว!', icon: 'error', width: '90%'});
                     return; // ยกเลิกการเข้าร่วม
                 }
 
@@ -343,7 +411,7 @@
                 document.getElementById('display-room-code').innerText = roomCode;
                 syncState();
             } else {
-                Swal.fire('เข้าไม่ได้', res.message, 'error');
+                Swal.fire({title: 'เข้าไม่ได้', text: res.message, icon: 'error', width: '90%'});
             }
         });
     }
@@ -378,7 +446,7 @@
         gameState.status = 'choosing_insurance';
         syncState();
         
-        // --- เพิ่มส่วนนี้: ให้หัวหน้าห้องเปลี่ยนหน้าจอไปเลือกประกันด้วยตัวเอง ---
+        // --- ให้หัวหน้าห้องเปลี่ยนหน้าจอไปเลือกประกันด้วยตัวเอง ---
         transitionToGame();
         promptStartingInsurance();
     }
@@ -430,18 +498,22 @@
         }
         htmlContent += `<label><input type="radio" name="start_ins" value="none" class="ins-radio" checked><div class="ins-card" style="justify-content: center;"><i class="fa-solid fa-ban" style="color:var(--danger);"></i><div class="i-name">ไม่ซื้อ</div></div></label></div>`;
 
-        const { value: choice } = await Swal.fire({ html: htmlContent, showCancelButton: false, confirmButtonText: 'พร้อมลุย', confirmButtonColor: p.color, width: '600px', allowOutsideClick: false, preConfirm: () => { return document.querySelector('input[name="start_ins"]:checked')?.value || 'none'; } });
+        const { value: choice } = await Swal.fire({ 
+            html: htmlContent, showCancelButton: false, confirmButtonText: 'พร้อมลุย', 
+            confirmButtonColor: p.color, width: '90%', allowOutsideClick: false, 
+            preConfirm: () => { return document.querySelector('input[name="start_ins"]:checked')?.value || 'none'; } 
+        });
 
         if (choice && choice !== 'none') {
             p.money -= insuranceTypes[choice].cost; p.insurances.push(choice);
-            await Swal.fire({ title: 'ซื้อสำเร็จ!', text: `ได้รับ ${insuranceTypes[choice].name}`, icon: 'success', timer: 1000, showConfirmButton: false });
+            await Swal.fire({ title: 'ซื้อสำเร็จ!', text: `ได้รับ ${insuranceTypes[choice].name}`, icon: 'success', timer: 1000, showConfirmButton: false, width: '90%' });
         }
         
         p.ready = true;
         document.getElementById(`card-p${p.id}`).classList.remove('active');
         gameState.players[myPlayerId] = p;
         syncState();
-        checkAllReady(); // --- เพิ่มบรรทัดนี้: ให้หัวหน้าห้องเช็กสถานะการเริ่มเกมหลังจากตัวเองกดพร้อม
+        checkAllReady(); // ให้หัวหน้าห้องเช็กสถานะการเริ่มเกมหลังจากตัวเองกดพร้อม
     }
 
     function checkAllReady() {
@@ -464,7 +536,7 @@
                     else if(diffM < 0) spawnFloatingText(`${diffM.toLocaleString()}฿`, 'var(--danger)', i);
                     
                     if(i === myPlayerId && op.skipTurn > 0 && np.skipTurn < op.skipTurn) {
-                        Swal.fire({ title: 'พักรักษาตัว!', html: `ถูกข้ามเทิร์นเพื่อพักฟื้น!`, icon: 'info', timer: 2000, showConfirmButton: false});
+                        Swal.fire({ title: 'พักรักษาตัว!', html: `ถูกข้ามเทิร์นเพื่อพักฟื้น!`, icon: 'info', timer: 2000, showConfirmButton: false, width: '90%'});
                     }
                 }
             }
@@ -533,7 +605,7 @@
         setTimeout(() => {
             let roll = Math.floor(Math.random() * 6) + 1;
             icon.className = `fa-solid ${diceIcons[roll-1]} dice-display`;
-            Swal.fire({ title: `ทอยได้ ${roll}!`, timer: 1000, showConfirmButton: false, position: 'top', customClass: {popup: 'hud-panel'} }).then(() => movePlayerLocally(p, roll));
+            Swal.fire({ title: `ทอยได้ ${roll}!`, timer: 1000, showConfirmButton: false, position: 'top', customClass: {popup: 'hud-panel'}, width: '90%' }).then(() => movePlayerLocally(p, roll));
         }, 600);
     }
 
@@ -571,9 +643,9 @@
         }
         else if(type === 'insurance') buyInsuranceSpace(p);
         else if(type === 'invest') {
-            const res = await Swal.fire({ title: 'ตลาดหุ้น', text: 'ลงทุน 3,000 ฿ ไหม? (โอกาส 50% ได้กำไร 2 เท่า)', icon: 'question', showCancelButton: true, confirmButtonText: 'ลงทุน', cancelButtonText: 'ผ่าน' });
+            const res = await Swal.fire({ title: 'ตลาดหุ้น', text: 'ลงทุน 3,000 ฿ ไหม? (โอกาส 50% ได้กำไร 2 เท่า)', icon: 'question', showCancelButton: true, confirmButtonText: 'ลงทุน', cancelButtonText: 'ผ่าน', width: '90%' });
             if(res.isConfirmed) {
-                if(p.money < 3000) await Swal.fire('เงินไม่พอ!', '', 'error');
+                if(p.money < 3000) await Swal.fire({title: 'เงินไม่พอ!', text: '', icon: 'error', width: '90%'});
                 else {
                     if(Math.random() > 0.5) { p.money += 3000; await showEventPopup('หุ้นขึ้น!', `ได้กำไร +3,000 ฿`, 'fa-arrow-trend-up', 'var(--money)', p.color); } 
                     else { p.money -= 3000; await showEventPopup('หุ้นตก!', `ขาดทุน -3,000 ฿`, 'fa-arrow-trend-down', 'var(--danger)', p.color); }
@@ -588,7 +660,7 @@
     function showWorkMenu(p) {
         Swal.fire({
             title: 'ทำงานหาเงิน', html: `ทำงาน 1 ครั้ง ได้เงิน <b style="color:var(--money);">+4,000 ฿</b> เสียพลังงาน <b style="color:var(--danger);">-20%</b>`,
-            icon: 'info', showCancelButton: true, confirmButtonText: 'ลุยทำงาน!', cancelButtonText: 'พอแค่นี้ (จบเทิร์น)', allowOutsideClick: false
+            icon: 'info', showCancelButton: true, confirmButtonText: 'ลุยทำงาน!', cancelButtonText: 'พอแค่นี้ (จบเทิร์น)', allowOutsideClick: false, width: '90%'
         }).then((res) => {
             if(res.isConfirmed) {
                 p.energy -= 20; p.money += 4000; gameState.players[p.id] = p; syncState();
@@ -602,7 +674,7 @@
         p.skipTurn = 1; let cost = 5000; let msg = ``;
         if(p.insurances.includes('health')) { cost = 0; msg = `มี <b>ประกันสุขภาพ</b> จ่ายให้ 5,000 ฿!<br>*งดเดิน 1 เทิร์น*`; } 
         else { p.money -= cost; msg = `เสียค่ารักษา <b style="color:var(--danger);">5,000 ฿</b><br>*งดเดิน 1 เทิร์น*`; }
-        p.energy = 50; await Swal.fire({ title: 'ร่างพัง!', html: msg, icon: 'error', allowOutsideClick: false }); finishTurn(p);
+        p.energy = 50; await Swal.fire({ title: 'ร่างพัง!', html: msg, icon: 'error', allowOutsideClick: false, width: '90%' }); finishTurn(p);
     }
 
     async function buyInsuranceSpace(p) {
@@ -613,15 +685,18 @@
                 htmlContent += `<label><input type="radio" name="mid_ins" value="${key}" class="ins-radio"><div class="ins-card"><i class="fa-solid ${ins.icon}"></i><div class="i-name">${ins.name}</div><div class="i-cost">-${ins.cost.toLocaleString()} ฿</div></div></label>`;
             }
         }
-        if(availableCount === 0) { await Swal.fire('คุ้มครองเต็มพิกัด!', '', 'info'); finishTurn(p); return; }
+        if(availableCount === 0) { await Swal.fire({title: 'คุ้มครองเต็มพิกัด!', text: '', icon: 'info', width: '90%'}); finishTurn(p); return; }
         htmlContent += `<label><input type="radio" name="mid_ins" value="none" class="ins-radio" checked><div class="ins-card"><i class="fa-solid fa-person-walking-arrow-right"></i><div class="i-name">เลื่อนผ่าน</div></div></label></div>`;
 
-        const { value: choice } = await Swal.fire({ html: htmlContent, showCancelButton: false, confirmButtonText: 'ยืนยัน', allowOutsideClick: false, preConfirm: () => { return document.querySelector('input[name="mid_ins"]:checked')?.value || 'none'; } });
+        const { value: choice } = await Swal.fire({ 
+            html: htmlContent, showCancelButton: false, confirmButtonText: 'ยืนยัน', allowOutsideClick: false, width: '90%', 
+            preConfirm: () => { return document.querySelector('input[name="mid_ins"]:checked')?.value || 'none'; } 
+        });
 
         if(choice && choice !== 'none') {
             let cost = insuranceTypes[choice].cost;
             if(p.money >= cost) { p.money -= cost; p.insurances.push(choice); await showEventPopup('ซื้อสำเร็จ', `หักเงิน ${cost} ฿`, insuranceTypes[choice].icon, 'var(--primary)', p.color); } 
-            else { await Swal.fire('เงินไม่พอ!', '', 'error'); }
+            else { await Swal.fire({title: 'เงินไม่พอ!', text: '', icon: 'error', width: '90%'}); }
         }
         finishTurn(p);
     }
@@ -643,11 +718,11 @@
     }
 
     function showEventPopup(title, desc, icon, color, btnColor) {
-        return Swal.fire({ html: `<div style="font-size:50px; color:${color}; margin-bottom:15px;"><i class="fa-solid ${icon}"></i></div><h2 style="margin:0 0 10px 0;">${title}</h2><p>${desc}</p>`, confirmButtonText: 'รับทราบ', confirmButtonColor: btnColor, allowOutsideClick: false });
+        return Swal.fire({ html: `<div style="font-size:50px; color:${color}; margin-bottom:15px;"><i class="fa-solid ${icon}"></i></div><h2 style="margin:0 0 10px 0;">${title}</h2><p>${desc}</p>`, confirmButtonText: 'รับทราบ', confirmButtonColor: btnColor, allowOutsideClick: false, width: '90%' });
     }
 
     async function finishTurn(p) {
-        if (p.money < 0) { p.active = false; await Swal.fire({title: 'ล้มละลาย!', text: `เงินหมดและถูกออกจากเกม!`, icon: 'error', allowOutsideClick: false}); }
+        if (p.money < 0) { p.active = false; await Swal.fire({title: 'ล้มละลาย!', text: `เงินหมดและถูกออกจากเกม!`, icon: 'error', allowOutsideClick: false, width: '90%'}); }
         gameState.players[p.id] = p; 
         
         let nextIdx = (gameState.currentPlayerIndex + 1) % gameState.playerCount;
@@ -670,7 +745,7 @@
         let html = localPlayers.filter(p => p.active).sort((a,b) => b.money - a.money).map((p, idx) => {
             return `<div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:800; font-size:18px;"><span style="color:${p.color}">${idx+1}. ${p.name}</span><span style="color:var(--money)">${p.money.toLocaleString()} ฿</span></div>`;
         }).join('');
-        Swal.fire({ title: `🏆 ผู้ชนะคือ ${winner.name}!`, html: `สรุปความมั่งคั่งตอนเกษียณ:<br><br>${html}`, icon: 'success', confirmButtonText: 'กลับหน้าแรก', allowOutsideClick: false }).then(() => location.reload());
+        Swal.fire({ title: `🏆 ผู้ชนะคือ ${winner.name}!`, html: `สรุปความมั่งคั่งตอนเกษียณ:<br><br>${html}`, icon: 'success', confirmButtonText: 'กลับหน้าแรก', allowOutsideClick: false, width: '90%' }).then(() => location.reload());
     }
 </script>
 
