@@ -53,12 +53,11 @@
         .btn-select:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px var(--outline); }
         .btn-select:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 4px 6px 0px var(--outline); }
         
-        /* เปลี่ยนโครงสร้างหน้าจอแผงผู้เล่นให้รวมเป็นแผงเดียวเพื่อให้จัดลงมือถือง่ายขึ้น */
         #players-panel {
             width: 320px; padding: 20px; display: flex; flex-direction: column; gap: 15px;
             background: rgba(255,255,255,0.05); border-right: 4px solid var(--outline); 
             overflow-y: auto; -webkit-overflow-scrolling: touch;
-            flex-shrink: 0; /* สำคัญมาก: ป้องกันไม่ให้แผงผู้เล่นโดนบีบจนหายไป */
+            flex-shrink: 0; 
         }
         
         #center-panel {
@@ -84,7 +83,6 @@
         .board-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
         .board-row:nth-child(even) { flex-direction: row-reverse; }
         
-        /* เพิ่มอนิเมชั่นช่องกระดานเวลาถูกเดินไปเหยียบ */
         @keyframes spacePop {
             0% { transform: scale(1); }
             50% { transform: scale(1.08); border-color: var(--warning); box-shadow: 0 0 15px var(--warning); z-index: 20;}
@@ -112,7 +110,6 @@
             position: absolute; bottom: 5px; right: 5px; display: flex; flex-wrap: wrap-reverse; gap: 4px; width: 100%; justify-content: flex-end; padding-right: 5px;
         }
         
-        /* อนิเมชั่นกระโดดแบบเด้งๆ ของเหรียญผู้เล่น */
         @keyframes tokenHop {
             0% { transform: translateY(-20px) scale(1.2); opacity: 0; }
             100% { transform: translateY(0) scale(1); opacity: 1; }
@@ -121,7 +118,7 @@
             width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;
             box-shadow: 1px 2px 0px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
             font-size: 10px; font-weight: 900; color: white; z-index: 50; 
-            animation: tokenHop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* ทำให้มีแรงเด้งดึ๋ง */
+            animation: tokenHop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
         }
         
         #controls {
@@ -131,9 +128,8 @@
         .turn-announcer { font-size: 24px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000; }
         .dice-display { font-size: 35px; width: 40px; text-align: center; }
         
-        /* ปรับสปีดลูกเต๋าตอนเขย่าให้เร็วขึ้น */
-        .dice-shake { animation: shake 0.2s infinite; }
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-20deg); } 100% { transform: rotate(0deg); } }
+        .dice-shake { animation: shake 0.15s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg) translateY(0); } 25% { transform: rotate(20deg) translateY(-5px); } 50% { transform: rotate(0deg) translateY(0); } 75% { transform: rotate(-20deg) translateY(5px); } 100% { transform: rotate(0deg) translateY(0); } }
         
         .floating-text {
             position: absolute; font-weight: 900; font-size: 22px; z-index: 2000; white-space: nowrap;
@@ -173,7 +169,7 @@
             .btn-roll { padding: 12px 25px; font-size: 20px; }
         }
 
-        /* --- Mobile Phones (Fluid Board Design) --- */
+        /* --- Mobile Phones --- */
         @media (max-width: 600px) {
             .title-logo { font-size: 35px; }
             .btn-select { width: 100%; font-size: 16px; padding: 12px; }
@@ -218,6 +214,14 @@
 <body>
 
 <div id="app-container">
+    <!-- หน้าต่างแสดงลูกเต๋ากลางจอสำหรับทุกคน -->
+    <div id="dice-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.85); z-index: 3000; flex-direction:column; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+        <div id="dice-overlay-text" style="font-size: 28px; font-weight: 900; color: white; margin-bottom: 30px; text-shadow: 2px 2px 0 var(--outline); text-align: center; padding: 0 20px;"></div>
+        <div style="background: white; width: 160px; height: 160px; border-radius: 32px; display: flex; justify-content: center; align-items: center; box-shadow: 0px 15px 0px rgba(0,0,0,0.4); border: 6px solid var(--outline);">
+            <i id="dice-overlay-icon" class="fa-solid fa-dice" style="font-size: 90px; color: var(--outline); transition: transform 0.2s;"></i>
+        </div>
+    </div>
+
     <div id="loading-screen" class="screen-layer">
         <i class="fa-solid fa-spinner fa-spin" style="font-size: 60px; margin-bottom: 20px; color: var(--primary);"></i>
         <h2 style="font-weight: 900;">กำลังเชื่อมต่อเซิร์ฟเวอร์...</h2>
@@ -297,6 +301,10 @@
     let isHost = false;
     let gameState = null;
     let localPlayers = [];
+    
+    // ตัวแปรสำหรับคุมอนิเมชั่นลูกเต๋า
+    let lastProcessedRollId = null;
+    let rollAnimationInterval = null;
 
     socket.on('connect', () => {
         document.getElementById('loading-screen').style.display = 'none';
@@ -309,6 +317,7 @@
             if (gameState.status === 'playing') {
                 updateAllUI();
                 updateTurnDisplay();
+                processDiceState(); // เรียกฟังก์ชันแสดงลูกเต๋าเมื่อมีการอัปเดต
             } else if (gameState.status === 'finished') {
                 showWinnerScreen();
             }
@@ -318,6 +327,11 @@
     socket.on('state_updated', (newState) => {
         const oldState = gameState;
         gameState = newState;
+        
+        // เช็กกันบั๊กตอนผู้เล่นเพิ่งโหลดเข้าเกมมาใหม่
+        if(!oldState && gameState.diceRoll) {
+            lastProcessedRollId = gameState.diceRoll.id;
+        }
         
         localPlayers = [];
         for(let i=0; i<gameState.playerCount; i++) {
@@ -339,6 +353,7 @@
             } else {
                 handleLiveSync(oldState);
             }
+            processDiceState(); // เรียกฟังก์ชันแสดงลูกเต๋าจากฝั่งเพื่อน
         }
         else if (gameState.status === 'finished') {
             if(!oldState || oldState.status !== 'finished') showWinnerScreen();
@@ -604,25 +619,75 @@
         document.body.appendChild(fText); setTimeout(() => fText.remove(), 1500);
     }
 
-    // --- ระบบทอยลูกเต๋าแบบมีอนิเมชั่น ---
+    // --- ฟังก์ชันจัดการแสดงลูกเต๋ากลางจอสำหรับทุกคน ---
+    function processDiceState() {
+        if(!gameState.diceRoll) return;
+        
+        const overlay = document.getElementById('dice-overlay');
+        const icon = document.getElementById('dice-overlay-icon');
+        const text = document.getElementById('dice-overlay-text');
+        
+        let roller = gameState.players[gameState.diceRoll.roller];
+        if(!roller) return;
+
+        if (gameState.diceRoll.rolling) {
+            // โชว์หน้าต่างกำลังทอย
+            overlay.style.display = 'flex';
+            text.innerHTML = `<span style="color:${roller.color}">${roller.name}</span> กำลังทอยลูกเต๋า...`;
+            icon.style.color = roller.color;
+            
+            if(!rollAnimationInterval) {
+                rollAnimationInterval = setInterval(() => {
+                    let tempRoll = Math.floor(Math.random() * 6);
+                    icon.className = `fa-solid ${diceIcons[tempRoll]} dice-shake`;
+                }, 80);
+            }
+        } else if (gameState.diceRoll.result) {
+            // โชว์ผลลัพธ์
+            if (lastProcessedRollId === gameState.diceRoll.id) return; // กันรันซ้ำซ้อน
+            lastProcessedRollId = gameState.diceRoll.id;
+            
+            if(rollAnimationInterval) {
+                clearInterval(rollAnimationInterval);
+                rollAnimationInterval = null;
+            }
+            
+            overlay.style.display = 'flex';
+            text.innerHTML = `<span style="color:${roller.color}">${roller.name}</span> ทอยได้ ${gameState.diceRoll.result}!`;
+            icon.className = `fa-solid ${diceIcons[gameState.diceRoll.result - 1]}`;
+            icon.classList.remove('dice-shake');
+            icon.style.transform = 'scale(1.3)'; // เด้งขยายใหญ่ขึ้นตอนโชว์เลข
+            
+            // ปิดหน้าต่างออโต้หลังจากโชว์เสร็จ
+            setTimeout(() => {
+                if(gameState.diceRoll && !gameState.diceRoll.rolling) {
+                    overlay.style.display = 'none';
+                    icon.style.transform = 'scale(1)';
+                }
+            }, 1200);
+        }
+    }
+
+    // --- ระบบทอยลูกเต๋าที่ส่งข้อมูลให้ทุกคน ---
     window.rollDice = function() {
         if(gameState.currentPlayerIndex !== myPlayerId) return;
         let p = localPlayers[myPlayerId];
-        let btn = document.getElementById('btn-roll'); let icon = document.getElementById('dice-icon');
+        let btn = document.getElementById('btn-roll');
         btn.disabled = true; 
         
-        // เล่นอนิเมชั่นสุ่มลูกเต๋าก่อน
-        let rollInterval = setInterval(() => {
-            let tempRoll = Math.floor(Math.random() * 6);
-            icon.className = `fa-solid ${diceIcons[tempRoll]} dice-display dice-shake`;
-        }, 100);
+        // 1. สั่งให้ทุกคนโชว์อนิเมชั่นเขย่าเต๋า
+        gameState.diceRoll = { rolling: true, roller: myPlayerId, result: null, id: Date.now() };
+        syncState();
 
         setTimeout(() => {
-            clearInterval(rollInterval); // หยุดสุ่ม
+            // 2. สุ่มเลขจริง แล้วสั่งให้ทุกคนแสดงผล
             let roll = Math.floor(Math.random() * 6) + 1;
-            icon.className = `fa-solid ${diceIcons[roll-1]} dice-display`; // โชว์ผลลัพธ์จริง
-            Swal.fire({ title: `ทอยได้ ${roll}!`, timer: 1000, showConfirmButton: false, position: 'top', customClass: {popup: 'hud-panel'}, width: '90%' }).then(() => movePlayerLocally(p, roll));
-        }, 800); // ระยะเวลาที่สุ่มลูกเต๋า (0.8 วิ)
+            gameState.diceRoll = { rolling: false, roller: myPlayerId, result: roll, id: Date.now() };
+            syncState();
+            
+            // รอให้ป๊อปอัปผลลัพธ์ค้างไว้แปปนึงค่อยเดิน
+            setTimeout(() => movePlayerLocally(p, roll), 1300);
+        }, 1500); // ระยะเวลาเขย่าลูกเต๋า (1.5 วินาที)
     }
 
     // --- ระบบเดินทีละก้าวแบบ Real-time ---
