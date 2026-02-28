@@ -281,7 +281,66 @@
         gameState.status = 'choosing_insurance';
         syncState();
     }
+// --- ระบบสร้างห้อง (แบบมีตั้งชื่อ) ---
+    window.createRoom = async function() {
+        const { value: playerName } = await Swal.fire({
+            title: 'ตั้งชื่อผู้เล่นของคุณ',
+            input: 'text',
+            inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
+            showCancelButton: true,
+            confirmButtonText: 'สร้างห้อง',
+            customClass: { popup: 'hud-panel' }
+        });
 
+        if (!playerName) return; // ถ้ายกเลิกหรือไม่พิมพ์ชื่อ ให้หยุดการทำงาน
+
+        let p = { uid: currentUserId, id: 0, name: playerName, color: colors[0], money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
+        let initialState = { status: 'lobby', players: { "0": p }, playerCount: 1, currentPlayerIndex: 0 };
+
+        socket.emit('create_room', { initialState }, (res) => {
+            if(res.success) {
+                roomCode = res.roomCode; myPlayerId = 0; isHost = true; gameState = initialState;
+                document.getElementById('display-room-code').innerText = roomCode;
+                renderRoomScreen();
+            }
+        });
+    }
+
+    // --- ระบบเข้าร่วมห้อง (แบบมีตั้งชื่อ) ---
+    window.joinRoom = async function() {
+        const { value: code } = await Swal.fire({ 
+            title: 'ใส่รหัสห้อง 4 หลัก', input: 'text', inputAttributes: { maxlength: 4 }, 
+            showCancelButton: true, confirmButtonText: 'ถัดไป', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' } 
+        });
+        if(!code) return;
+
+        const { value: playerName } = await Swal.fire({
+            title: 'ตั้งชื่อผู้เล่นของคุณ',
+            input: 'text',
+            inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
+            showCancelButton: true,
+            confirmButtonText: 'เข้าร่วมห้อง',
+            confirmButtonColor: 'var(--warning)',
+            customClass: { popup: 'hud-panel' }
+        });
+
+        if (!playerName) return;
+
+        Swal.showLoading();
+        let newP = { uid: currentUserId, id: 0, name: playerName, color: '#000', money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
+
+        socket.emit('join_room', { roomCode: code.toUpperCase(), playerState: newP }, (res) => {
+            Swal.close();
+            if(res.success) {
+                roomCode = code.toUpperCase(); gameState = res.state; myPlayerId = res.myPlayerId;
+                gameState.players[myPlayerId].color = colors[myPlayerId]; // ดึงสีประจำตัวมาใช้ (ชื่อจะใช้ตามที่กรอกมา)
+                document.getElementById('display-room-code').innerText = roomCode;
+                syncState();
+            } else {
+                Swal.fire('เข้าไม่ได้', res.message, 'error');
+            }
+        });
+    }
     function renderRoomScreen() {
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('room-screen').style.display = 'flex';
@@ -596,3 +655,4 @@
 
 </body>
 </html>
+
