@@ -144,9 +144,14 @@
     <div id="room-screen" class="screen-layer">
         <h2 style="font-size: 20px; margin-bottom: 5px; color: #475569;">รหัสห้องของคุณ</h2>
         <div style="font-size: 60px; font-weight: 900; color: var(--primary); letter-spacing: 5px; text-shadow: 3px 3px 0 var(--outline); margin-bottom: 20px;" id="display-room-code">----</div>
-        <p style="color: var(--outline); font-weight:800; margin-bottom: 10px;"><i class="fa-solid fa-users"></i> ผู้เล่นที่เข้าร่วมแล้ว (<span id="player-count">0</span>/4)</p>
+        <p style="color: var(--outline); font-weight:800; margin-bottom: 10px;"><i class="fa-solid fa-users"></i> ผู้เล่นที่เข้าร่วมแล้ว (<span id="player-count">0</span>/<span id="max-players">4</span>)</p>
+        
         <div id="player-list" style="display:flex; flex-direction:column; gap:10px; margin-bottom: 30px; width: 100%; max-width: 300px;"></div>
-        <button id="btn-start-game" class="btn-select" style="display:none; background:var(--accent);" onclick="window.startGameHost()"><i class="fa-solid fa-play"></i> เริ่มเกม!</button>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+            <button id="btn-start-game" class="btn-select" style="display:none; background:var(--accent); width: auto;" onclick="window.startGameHost()"><i class="fa-solid fa-play"></i> เริ่มเกม!</button>
+            <button class="btn-select" style="background:#64748b; width: auto;" onclick="location.reload()"><i class="fa-solid fa-arrow-left"></i> กลับหน้าแรก</button>
+        </div>
         <div id="wait-host-text" style="display:none; font-weight:900; color:var(--warning); font-size: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> รอหัวหน้าห้องกดเริ่มเกม...</div>
     </div>
 
@@ -158,6 +163,10 @@
                 <div class="turn-announcer" id="turn-announcer">กำลังโหลด...</div>
                 <button class="btn-select" id="btn-roll" style="width: auto; padding: 15px 40px; font-size: 24px;" onclick="window.rollDice()" disabled>
                     <i class="fa-solid fa-dice dice-display" id="dice-icon"></i> <span>รอเพื่อน...</span>
+                </button>
+                <!-- ปุ่มออกจากเกมเมื่อกำลังเล่น -->
+                <button class="btn-select" style="background:var(--danger); padding: 10px 20px; font-size: 16px; width: auto; margin-top: 10px;" onclick="if(confirm('แน่ใจหรือไม่ว่าต้องการออกจากเกม? ระบบจะพากลับไปหน้าแรก')) location.reload();">
+                    <i class="fa-solid fa-right-from-bracket"></i> ออกจากเกม
                 </button>
             </div>
         </div>
@@ -206,12 +215,10 @@
         document.getElementById('lobby-screen').style.display = 'flex';
     });
 
-    // ฟังก์ชันสำหรับส่งข้อมูลอัปเดตไปให้เพื่อนทุกคน
     function syncState() {
         if(roomCode) socket.emit('update_state', { roomCode: roomCode, newState: gameState });
     }
 
-    // เมื่อมีเพื่อนอัปเดตข้อมูลมา
     socket.on('state_updated', (newState) => {
         const oldState = gameState;
         gameState = newState;
@@ -242,60 +249,43 @@
         }
     });
 
-    window.createRoom = function() {
-        let p = { uid: currentUserId, id: 0, name: pNames[0], color: colors[0], money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
-        let initialState = { status: 'lobby', players: { "0": p }, playerCount: 1, currentPlayerIndex: 0 };
-
-        socket.emit('create_room', { initialState }, (res) => {
-            if(res.success) {
-                roomCode = res.roomCode; myPlayerId = 0; isHost = true; gameState = initialState;
-                document.getElementById('display-room-code').innerText = roomCode;
-                renderRoomScreen();
-            }
-        });
-    }
-
-    window.joinRoom = async function() {
-        const { value: code } = await Swal.fire({ title: 'ใส่รหัสห้อง 4 หลัก', input: 'text', inputAttributes: { maxlength: 4 }, showCancelButton: true, confirmButtonText: 'เข้าร่วม', confirmButtonColor: 'var(--warning)', customClass: { popup: 'hud-panel' } });
-        if(!code) return;
-
-        Swal.showLoading();
-        let newP = { uid: currentUserId, id: 0, name: 'Player', color: '#000', money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
-
-        socket.emit('join_room', { roomCode: code.toUpperCase(), playerState: newP }, (res) => {
-            Swal.close();
-            if(res.success) {
-                roomCode = code.toUpperCase(); gameState = res.state; myPlayerId = res.myPlayerId;
-                gameState.players[myPlayerId].name = pNames[myPlayerId];
-                gameState.players[myPlayerId].color = colors[myPlayerId];
-                document.getElementById('display-room-code').innerText = roomCode;
-                syncState();
-            } else {
-                Swal.fire('เข้าไม่ได้', res.message, 'error');
-            }
-        });
-    }
-
-    window.startGameHost = function() {
-        if(gameState.playerCount < 1) return;
-        gameState.status = 'choosing_insurance';
-        syncState();
-    }
-// --- ระบบสร้างห้อง (แบบมีตั้งชื่อ) ---
+    // --- ระบบสร้างห้อง (ตั้งชื่อและเลือกจำนวนคน) ---
     window.createRoom = async function() {
         const { value: playerName } = await Swal.fire({
             title: 'ตั้งชื่อผู้เล่นของคุณ',
             input: 'text',
             inputAttributes: { maxlength: 10, placeholder: 'สูงสุด 10 ตัวอักษร' },
             showCancelButton: true,
+            confirmButtonText: 'ถัดไป',
+            customClass: { popup: 'hud-panel' }
+        });
+
+        if (!playerName) return;
+
+        const { value: maxPlayers } = await Swal.fire({
+            title: 'เลือกจำนวนผู้เล่นสูงสุด',
+            input: 'select',
+            inputOptions: {
+                '2': '2 คน',
+                '3': '3 คน',
+                '4': '4 คน'
+            },
+            inputValue: '4',
+            showCancelButton: true,
             confirmButtonText: 'สร้างห้อง',
             customClass: { popup: 'hud-panel' }
         });
 
-        if (!playerName) return; // ถ้ายกเลิกหรือไม่พิมพ์ชื่อ ให้หยุดการทำงาน
+        if (!maxPlayers) return;
 
         let p = { uid: currentUserId, id: 0, name: playerName, color: colors[0], money: 10000, energy: 100, pos: 0, active: true, insurances: [], skipTurn: 0, ready: false };
-        let initialState = { status: 'lobby', players: { "0": p }, playerCount: 1, currentPlayerIndex: 0 };
+        let initialState = { 
+            status: 'lobby', 
+            players: { "0": p }, 
+            playerCount: 1, 
+            currentPlayerIndex: 0,
+            maxPlayers: parseInt(maxPlayers) // เก็บจำนวนคนสูงสุดไว้ใน State
+        };
 
         socket.emit('create_room', { initialState }, (res) => {
             if(res.success) {
@@ -306,7 +296,7 @@
         });
     }
 
-    // --- ระบบเข้าร่วมห้อง (แบบมีตั้งชื่อ) ---
+    // --- ระบบเข้าร่วมห้อง ---
     window.joinRoom = async function() {
         const { value: code } = await Swal.fire({ 
             title: 'ใส่รหัสห้อง 4 หลัก', input: 'text', inputAttributes: { maxlength: 4 }, 
@@ -332,8 +322,14 @@
         socket.emit('join_room', { roomCode: code.toUpperCase(), playerState: newP }, (res) => {
             Swal.close();
             if(res.success) {
+                // เช็กว่าผู้เล่นเกินจำนวนที่หัวหน้าห้องตั้งไว้หรือไม่
+                if(res.state.maxPlayers && res.myPlayerId >= res.state.maxPlayers) {
+                    Swal.fire('เข้าไม่ได้', 'ห้องนี้มีผู้เล่นเต็มแล้ว!', 'error');
+                    return; // ยกเลิกการเข้าร่วม
+                }
+
                 roomCode = code.toUpperCase(); gameState = res.state; myPlayerId = res.myPlayerId;
-                gameState.players[myPlayerId].color = colors[myPlayerId]; // ดึงสีประจำตัวมาใช้ (ชื่อจะใช้ตามที่กรอกมา)
+                gameState.players[myPlayerId].color = colors[myPlayerId];
                 document.getElementById('display-room-code').innerText = roomCode;
                 syncState();
             } else {
@@ -341,10 +337,12 @@
             }
         });
     }
+
     function renderRoomScreen() {
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('room-screen').style.display = 'flex';
         document.getElementById('player-count').innerText = gameState.playerCount;
+        document.getElementById('max-players').innerText = gameState.maxPlayers || 4; // อัปเดตตัวเลขจำนวนคนสูงสุด
         
         let listHtml = '';
         for(let i=0; i<gameState.playerCount; i++) {
@@ -357,10 +355,18 @@
         document.getElementById('player-list').innerHTML = listHtml;
         
         if(isHost) {
-            document.getElementById('btn-start-game').style.display = 'flex'; document.getElementById('wait-host-text').style.display = 'none';
+            document.getElementById('btn-start-game').style.display = 'flex'; 
+            document.getElementById('wait-host-text').style.display = 'none';
         } else {
-            document.getElementById('btn-start-game').style.display = 'none'; document.getElementById('wait-host-text').style.display = 'block';
+            document.getElementById('btn-start-game').style.display = 'none'; 
+            document.getElementById('wait-host-text').style.display = 'block';
         }
+    }
+
+    window.startGameHost = function() {
+        if(gameState.playerCount < 1) return;
+        gameState.status = 'choosing_insurance';
+        syncState();
     }
 
     function transitionToGame() {
@@ -655,4 +661,3 @@
 
 </body>
 </html>
-
